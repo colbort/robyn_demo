@@ -1,0 +1,2 @@
+service.name=order-service
+service.port=8002

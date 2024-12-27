@@ -1,0 +1,144 @@
+version: "3.9"
+services:
+  mall-traefik:
+    image: traefik:v2.10
+    container_name: mall-traefik
+    command:
+      - "--api.insecure=true"
+      - "--log.level=DEBUG"    # 开启 DEBUG 日志
+      - "--accesslog=true"     # 开启访问日志
+      - "--accesslog.filepath=/logs/access.log" # 保存访问日志到文件
+      - "--providers.docker=true"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--api.dashboard=true"
+      - "--entrypoints.traefik.address=:8080" # Dashboard 默认端口
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080" # Dashboard 端口
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./gateway/:/etc/traefik/"
+      - "./logs/:/logs/" # 挂载日志目录
+    networks:
+      - common
+
+  mall-mysql:
+    image: mysql:8.0
+    container_name: mall-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: 12345678
+      MYSQL_SQL_MODE: "NO_ENGINE_SUBSTITUTION,STRICT_TRANS_TABLES"
+    command: --sql-mode="NO_ENGINE_SUBSTITUTION,STRICT_TRANS_TABLES" # 禁用 ONLY_FULL_GROUP_BY
+    ports:
+      - "13306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - common
+
+  mall-redis:
+    image: redis
+    container_name: mall-redis
+    ports:
+      - "16379:6379"
+    command: redis-server --requirepass 12345678
+    networks:
+      - common
+
+  mall-rabbitmq:
+    image: rabbitmq:3-management
+    container_name: mall-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "15672:15672" # RabbitMQ 管理界面
+    networks:
+      - common
+
+  mall-nacos:
+    image: nacos/nacos-server:latest
+    platform: linux/arm64
+    container_name: mall-nacos
+    environment:
+      - TZ=Asia/Shanghai
+      - MODE=standalone
+      - SPRING_DATASOURCE_PLATFORM=mysql
+      - MYSQL_SERVICE_HOST=mall-mysql
+      - MYSQL_SERVICE_DB_NAME=nacos_devtest
+      - MYSQL_SERVICE_PORT=3306
+      - MYSQL_SERVICE_USER=root
+      - MYSQL_SERVICE_PASSWORD=12345678
+      - MYSQL_SERVICE_DB_PARAM=characterEncoding=utf8&connectTimeout=1000&socketTimeout=3000&autoReconnect=true&useUnicode=true&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+      - NACOS_AUTH_IDENTITY_KEY=2222
+      - NACOS_AUTH_IDENTITY_VALUE=2xxx
+      - NACOS_AUTH_TOKEN=SecretKey012345678901234567890123456789012345678901234567890123456789
+      - NACOS_AUTH_ENABLE=true
+    ports:
+      - "8848:8848"
+    networks:
+      - common
+
+  service-core:
+    image: docker.live168.xyz/mall_python/service_core:1.0.0
+    container_name: service-core
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.core-router.rule=PathPrefix(`/api/v1/core`)"
+      - "traefik.http.routers.core-router.entrypoints=web"
+      - "traefik.http.services.core-service.loadbalancer.server.port=8000"
+    networks:
+      - common
+
+  service-user:
+    image: docker.live168.xyz/mall_python/service_user:1.0.0
+    container_name: service-user
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.user-router.rule=PathPrefix(`/api/v1/user`)"
+      - "traefik.http.routers.user-router.entrypoints=web"
+      - "traefik.http.services.user-service.loadbalancer.server.port=8001"
+    networks:
+      - common
+
+  service-order:
+    image: docker.live168.xyz/mall_python/service_order:1.0.0
+    container_name: service-order
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.order-router.rule=PathPrefix(`/api/v1/order`)"
+      - "traefik.http.routers.order-router.entrypoints=web"
+      - "traefik.http.services.order-service.loadbalancer.server.port=8002"
+    networks:
+      - common
+
+  service-product:
+    image: docker.live168.xyz/mall_python/service_product:1.0.0
+    container_name: service-product
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.product-router.rule=PathPrefix(`/api/v1/product`)"
+      - "traefik.http.routers.product-router.entrypoints=web"
+      - "traefik.http.services.product-service.loadbalancer.server.port=8003"
+    networks:
+      - common
+
+  service-wallet:
+    image: docker.live168.xyz/mall_python/service_wallet:1.0.0
+    container_name: service-wallet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.wallet-router.rule=PathPrefix(`/api/v1/wallet`)"
+      - "traefik.http.routers.wallet-router.entrypoints=web"
+      - "traefik.http.services.wallet-service.loadbalancer.server.port=8004"
+    networks:
+      - common
+
+networks:
+  common:
+    external: true
+
+volumes:
+  mysql_data:

@@ -1,0 +1,33 @@
+mysql:
+    host: 127.0.0.1
+    port: 13306
+    username: root
+    password: 12345678
+    db: mall
+
+redis:
+    host: 127.0.0.1
+    port: 16379
+    password: '12345678'
+    db: 12
+
+rabbitmq:
+    host: 127.0.0.1
+    port: 25672
+    username: guest
+    password: guest
+
+service_user:
+    name: user-service
+    port: 8001
+    channel: user-service-queue
+
+service_order:
+    name: order-service
+    port: 8002
+    channel: order-service-queue
+
+service_product:
+    name: product-service
+    port: 8003
+    channel: product-service-queue

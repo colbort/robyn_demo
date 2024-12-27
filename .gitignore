@@ -1,0 +1,7 @@
+/venv/
+/logs/
+/service_core/build/
+/service_order/build/
+/service_product/build/
+/service_user/build/
+/service_wallet/build/
