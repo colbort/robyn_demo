@@ -24,6 +24,11 @@ rabbitmq:
     username: guest
     password: guest
 
+service_core:
+    name: core-service
+    port: 8000
+    channel: core-service-queue
+
 service_user:
     name: user-service
     port: 8001

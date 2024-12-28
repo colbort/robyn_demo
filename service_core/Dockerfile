@@ -5,7 +5,8 @@ FROM debian:bullseye-slim
 WORKDIR /app
 
 # 复制可执行文件到容器
-COPY build/app /app/
+COPY dist/app /app/
+COPY ../locales /app/
 
 # 设置运行时环境变量（可选）
 ENV APP_ENV=prod

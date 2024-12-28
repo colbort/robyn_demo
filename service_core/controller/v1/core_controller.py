@@ -41,7 +41,7 @@ class CoreController:
             }
 
         @self.app.get('time_sync')
-        async def time_sync(request: Request):
+        async def time_sync():
             """
             时间戳同步
             返回服务端 UTC 时间戳（毫秒）。

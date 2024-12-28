@@ -5,3 +5,8 @@
 /service_product/build/
 /service_user/build/
 /service_wallet/build/
+/service_core/dist/
+/service_order/dist/
+/service_product/dist/
+/service_user/dist/
+/service_wallet/dist/
