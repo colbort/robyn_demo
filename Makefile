@@ -9,7 +9,8 @@ VERSION=1.0.0
 build_core:
 	@SERVICE_DIR=service_core; \
     (cd $$SERVICE_DIR && pwd && ./build.sh); \
-    (cd $$SERVICE_DIR && docker build --platform linux/amd64 -t $$SERVICE_DIR .); \
+    docker build --platform linux/amd64 --build-arg LOCALES_DIR=locales \
+    -t $$SERVICE_DIR -f $$SERVICE_DIR/Dockerfile .; \
     docker tag $$SERVICE_DIR ${REPOSITORY}/$$SERVICE_DIR:$(VERSION); \
     docker push ${REPOSITORY}/$$SERVICE_DIR:$(VERSION);\
     docker rmi ${REPOSITORY}/$$SERVICE_DIR:$(VERSION);\
@@ -19,7 +20,8 @@ build_core:
 build_user:
 	@SERVICE_DIR=service_user; \
     (cd $$SERVICE_DIR && pwd && ./build.sh); \
-    (cd $$SERVICE_DIR && docker build --platform linux/amd64 -t $$SERVICE_DIR .); \
+    docker build --platform linux/amd64 --build-arg LOCALES_DIR=locales \
+    -t $$SERVICE_DIR -f $$SERVICE_DIR/Dockerfile .; \
     docker tag $$SERVICE_DIR ${REPOSITORY}/$$SERVICE_DIR:$(VERSION); \
     docker push ${REPOSITORY}/$$SERVICE_DIR:$(VERSION);\
     docker rmi ${REPOSITORY}/$$SERVICE_DIR:$(VERSION);\
@@ -29,7 +31,8 @@ build_user:
 build_order:
 	@SERVICE_DIR=service_order; \
     (cd $$SERVICE_DIR && pwd && ./build.sh); \
-    (cd $$SERVICE_DIR && docker build --platform linux/amd64 -t $$SERVICE_DIR .); \
+    docker build --platform linux/amd64 --build-arg LOCALES_DIR=locales \
+    -t $$SERVICE_DIR -f $$SERVICE_DIR/Dockerfile .; \
     docker tag $$SERVICE_DIR ${REPOSITORY}/$$SERVICE_DIR:$(VERSION); \
     docker push ${REPOSITORY}/$$SERVICE_DIR:$(VERSION);\
     docker rmi ${REPOSITORY}/$$SERVICE_DIR:$(VERSION);\
@@ -39,7 +42,8 @@ build_order:
 build_product:
 	@SERVICE_DIR=service_product; \
     (cd $$SERVICE_DIR && pwd && ./build.sh); \
-    (cd $$SERVICE_DIR && docker build --platform linux/amd64 -t $$SERVICE_DIR .); \
+    docker build --platform linux/amd64 --build-arg LOCALES_DIR=locales \
+    -t $$SERVICE_DIR -f $$SERVICE_DIR/Dockerfile .; \
     docker tag $$SERVICE_DIR ${REPOSITORY}/$$SERVICE_DIR:$(VERSION); \
     docker push ${REPOSITORY}/$$SERVICE_DIR:$(VERSION);\
     docker rmi ${REPOSITORY}/$$SERVICE_DIR:$(VERSION);\
@@ -49,7 +53,8 @@ build_product:
 build_wallet:
 	@SERVICE_DIR=service_wallet; \
     (cd $$SERVICE_DIR && pwd && ./build.sh); \
-    (cd $$SERVICE_DIR && docker build --platform linux/amd64 -t $$SERVICE_DIR .); \
+    docker build --platform linux/amd64 --build-arg LOCALES_DIR=locales \
+    -t $$SERVICE_DIR -f $$SERVICE_DIR/Dockerfile .; \
     docker tag $$SERVICE_DIR ${REPOSITORY}/$$SERVICE_DIR:$(VERSION); \
     docker push ${REPOSITORY}/$$SERVICE_DIR:$(VERSION);\
     docker rmi ${REPOSITORY}/$$SERVICE_DIR:$(VERSION);\

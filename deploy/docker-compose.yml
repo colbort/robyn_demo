@@ -24,20 +24,6 @@ services:
     networks:
       - common
 
-  mall-mysql:
-    image: mysql:8.0
-    container_name: mall-mysql
-    environment:
-      MYSQL_ROOT_PASSWORD: 12345678
-      MYSQL_SQL_MODE: "NO_ENGINE_SUBSTITUTION,STRICT_TRANS_TABLES"
-    command: --sql-mode="NO_ENGINE_SUBSTITUTION,STRICT_TRANS_TABLES" # 禁用 ONLY_FULL_GROUP_BY
-    ports:
-      - "13306:3306"
-    volumes:
-      - mysql_data:/var/lib/mysql
-    networks:
-      - common
-
   mall-redis:
     image: redis
     container_name: mall-redis
@@ -57,6 +43,26 @@ services:
       - "15672:15672" # RabbitMQ 管理界面
     networks:
       - common
+
+  mall-mysql:
+    image: mysql:8.0
+    container_name: mall-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: 12345678
+      MYSQL_SQL_MODE: "NO_ENGINE_SUBSTITUTION,STRICT_TRANS_TABLES"
+    command: --sql-mode="NO_ENGINE_SUBSTITUTION,STRICT_TRANS_TABLES" # 禁用 ONLY_FULL_GROUP_BY
+    ports:
+      - "13306:3306"
+    volumes:
+      - ./mysql_data:/var/lib/mysql
+      - ./mysql:/docker-entrypoint-initdb.d
+    networks:
+      - common
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
   mall-nacos:
     image: nacos/nacos-server:latest
@@ -80,6 +86,14 @@ services:
       - "8848:8848"
     networks:
       - common
+    volumes:
+      - ./nacos:/home/init
+    entrypoint: [ "sh", "/home/init/entrypoint.sh" ]
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8848/nacos/v1/cs/configs?dataId=mall.yaml&group=DEFAULT_GROUP&namespaceId=mall" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   service-core:
     image: docker.live168.xyz/mall_python/service_core:1.0.0
@@ -91,6 +105,9 @@ services:
       - "traefik.http.services.core-service.loadbalancer.server.port=8000"
     networks:
       - common
+    depends_on:
+      mall-nacos:
+        condition: service_healthy
 
   service-user:
     image: docker.live168.xyz/mall_python/service_user:1.0.0
@@ -102,6 +119,9 @@ services:
       - "traefik.http.services.user-service.loadbalancer.server.port=8001"
     networks:
       - common
+    depends_on:
+      mall-nacos:
+        condition: service_healthy
 
   service-order:
     image: docker.live168.xyz/mall_python/service_order:1.0.0
@@ -113,6 +133,9 @@ services:
       - "traefik.http.services.order-service.loadbalancer.server.port=8002"
     networks:
       - common
+    depends_on:
+      mall-nacos:
+        condition: service_healthy
 
   service-product:
     image: docker.live168.xyz/mall_python/service_product:1.0.0
@@ -124,6 +147,9 @@ services:
       - "traefik.http.services.product-service.loadbalancer.server.port=8003"
     networks:
       - common
+    depends_on:
+      mall-nacos:
+        condition: service_healthy
 
   service-wallet:
     image: docker.live168.xyz/mall_python/service_wallet:1.0.0
@@ -135,10 +161,11 @@ services:
       - "traefik.http.services.wallet-service.loadbalancer.server.port=8004"
     networks:
       - common
+    depends_on:
+      mall-nacos:
+        condition: service_healthy
 
 networks:
   common:
     external: true
 
-volumes:
-  mysql_data:
