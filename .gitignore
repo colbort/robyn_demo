@@ -10,3 +10,4 @@
 /service_product/dist/
 /service_user/dist/
 /service_wallet/dist/
+/deploy/mysql_data/
