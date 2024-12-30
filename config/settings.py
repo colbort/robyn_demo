@@ -13,8 +13,8 @@ CONFIG = {
     },
     "prod": {
         "SERVER_ADDRESS": "http://mall-nacos:8848",
-        "NAMESPACE": "087dbe1b-e6f2-488b-97b4-1fbe5f510086",
-        "USERNAME": "root",
+        "NAMESPACE": "mall",
+        "USERNAME": "nacos",
         "PASSWORD": "12345678"
     }
 }

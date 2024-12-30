@@ -1,20 +1,42 @@
-# 使用一个轻量级的基础镜像
-FROM debian:bullseye-slim
+# 使用 Python 3.10 镜像作为基础镜像
+FROM python:3.10-slim
 
-# 创建工作目录
+# 设置工作目录
 WORKDIR /app
 
-# 复制可执行文件到容器
-COPY ./service_wallet/dist/app /app/
-# 接受构建时参数并复制 locales
-ARG LOCALES_DIR=locales
-COPY ${LOCALES_DIR} /app/locales/
+# 更新系统并安装构建工具
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    make \
+    libssl-dev \
+    libffi-dev \
+    default-libmysqlclient-dev \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-# 设置运行时环境变量（可选）
-ENV APP_ENV=prod
+# 复制依赖配置文件
+COPY ./service_wallet/requirements.txt .
 
-# 暴露端口（根据需求）
+# 安装依赖
+RUN pip install --no-cache-dir -r requirements.txt
+
+# 将项目代码复制到容器内
+COPY common /app/common
+COPY communication /app/communication
+COPY config /app/config
+COPY handler /app/handler
+COPY middleware /app/middleware
+COPY nacos_client /app/nacos_client
+COPY models /app/models
+COPY locales /app/locales
+COPY service_wallet /app/service_wallet
+
+# 设置 PYTHONPATH 环境变量，确保模块路径可访问
+ENV PYTHONPATH=/app
+
+# 暴露端口 (Robyn 默认端口是 5000，可以根据实际情况修改)
 EXPOSE 8004
 
-# 设置默认启动命令
-CMD ["./app"]
+# 启动命令
+CMD ["python", "service_wallet/app.py"]

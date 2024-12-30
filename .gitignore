@@ -11,3 +11,8 @@
 /service_user/dist/
 /service_wallet/dist/
 /deploy/mysql_data/
+/service_core/nacos-data/
+/service_order/nacos-data/
+/service_product/nacos-data/
+/service_user/nacos-data/
+/service_wallet/nacos-data/

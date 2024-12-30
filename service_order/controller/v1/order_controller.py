@@ -24,7 +24,7 @@ class OrderController:
             """获取订单详情"""
             return fetch_order_details(order_id)
 
-        @self.app.post("orders", auth_required=True)
+        @self.app.post("order", auth_required=True)
         async def _create_order(request: Request):
             """创建订单"""
             user_id = get_user_id(request.identity)

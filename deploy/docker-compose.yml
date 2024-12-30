@@ -90,13 +90,13 @@ services:
       - ./nacos:/home/init
     entrypoint: [ "sh", "/home/init/entrypoint.sh" ]
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8848/nacos/v1/cs/configs?dataId=mall.yaml&group=DEFAULT_GROUP&namespaceId=mall" ]
+      test: [ "CMD-SHELL", "sh /home/init/healthcheck.sh" ]
       interval: 10s
       timeout: 5s
       retries: 5
 
   service-core:
-    image: docker.live168.xyz/mall_python/service_core:1.0.0
+    image: docker.live168.xyz/mall_python/service_core:v1.0.6
     container_name: service-core
     labels:
       - "traefik.enable=true"
@@ -110,7 +110,7 @@ services:
         condition: service_healthy
 
   service-user:
-    image: docker.live168.xyz/mall_python/service_user:1.0.0
+    image: docker.live168.xyz/mall_python/service_user:v1.0.6
     container_name: service-user
     labels:
       - "traefik.enable=true"
@@ -124,7 +124,7 @@ services:
         condition: service_healthy
 
   service-order:
-    image: docker.live168.xyz/mall_python/service_order:1.0.0
+    image: docker.live168.xyz/mall_python/service_order:v1.0.6
     container_name: service-order
     labels:
       - "traefik.enable=true"
@@ -138,7 +138,7 @@ services:
         condition: service_healthy
 
   service-product:
-    image: docker.live168.xyz/mall_python/service_product:1.0.0
+    image: docker.live168.xyz/mall_python/service_product:v1.0.6
     container_name: service-product
     labels:
       - "traefik.enable=true"
@@ -152,7 +152,7 @@ services:
         condition: service_healthy
 
   service-wallet:
-    image: docker.live168.xyz/mall_python/service_wallet:1.0.0
+    image: docker.live168.xyz/mall_python/service_wallet:v1.0.6
     container_name: service-wallet
     labels:
       - "traefik.enable=true"

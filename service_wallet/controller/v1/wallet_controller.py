@@ -2,7 +2,6 @@ from robyn import Robyn, Request
 
 from common.cjwt import create_token
 from common.router_group import RouterGroup
-from service_wallet.services.wallet_service import *
 
 
 class WalletController:

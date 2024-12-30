@@ -46,8 +46,8 @@ class UserController:
                     username=data.username,
                     password=data.password,
                 )
-                print(Translator.get_translation("1001001", language))
-                print(Translator.get_translation("1001002", language))
+                logger.info(Translator.get_translation("1001001", language))
+                logger.info(Translator.get_translation("1001002", language))
                 if not user_id or not username:
                     return fail(message="登录失败")
                 else:
