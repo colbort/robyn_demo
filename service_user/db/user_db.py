@@ -4,7 +4,7 @@ from tortoise.transactions import in_transaction
 
 from common.logger import logger
 from handler.db_handler import DBHandler
-from handler.redis_handler import cache_result
+from handler.redis_handler import cache_result, delete_cache
 from models.nickname import Nickname
 from models.user_account import UserAccount
 
@@ -89,6 +89,10 @@ async def update_user_balance(user: UserAccount) -> bool:
     try:
         await DBHandler.use_write()
         await user.save()
+        await delete_cache(redis_type="string", cache_key=f"user:{user.id}")
+        await delete_cache(redis_type="string", cache_key=f"user:{user.phone}")
+        await delete_cache(redis_type="string", cache_key=f"user:{user.email}")
+        await delete_cache(redis_type="string", cache_key=f"user:{user.username}")
         return True
     except Exception as e:
         logger.error(f'更新用户余额失败 {e}')

@@ -1,5 +1,6 @@
 import functools
 import json
+import random
 from typing import Any
 
 import aioredis
@@ -29,6 +30,10 @@ class RedisHandler:
             logger.info("Redis 初始化完成！")
         except Exception as e:
             logger.error(f"Redis 初始化失败 {e}")
+
+    @staticmethod
+    def pool():
+        return RedisHandler._pool
 
     @staticmethod
     async def close():
@@ -232,16 +237,17 @@ def _deserialize_object(data: str, cls: Any) -> Any:
         raise TypeError("Unsupported object type for deserialization")
 
 
-def cache_result(redis_type: str = "string", ttl: int = 0, key_generator: callable = None, field: str = None,
-                 cls: Any = None, key_field: str = 'id'):
+def cache_result(redis_type: str = "string", ttl: int = None, key_generator: callable = None, field: str = None,
+                 cls: Any = None, key_field: str = 'id', lock_timeout: int = 10):
     """
     Redis 缓存装饰器
     :param redis_type: Redis 数据结构类型，支持 'string', 'hash', 'list', 'set', 'sorted_set'
-    :param ttl: 缓存过期时间，单位秒
+    :param ttl: 缓存过期时间，单位秒。可以为 None，表示缓存永不过期
     :param key_generator: 用于生成缓存键的函数
     :param field: 如果使用哈希表，则指定缓存字段
     :param cls: 指定返回的 ORM 类或 Pydantic 类
     :param key_field: 用来生成缓存键的字段，如 'phone', 'email', 'id' 等
+    :param lock_timeout: 锁的超时时间，单位秒
     """
 
     def decorator(func):
@@ -257,54 +263,40 @@ def cache_result(redis_type: str = "string", ttl: int = 0, key_generator: callab
             if field:
                 cache_key = f"{cache_key}:{field}"
 
-            # 根据 Redis 数据类型选择相应的缓存方式
-            if redis_type == "string":
-                # 处理 Redis 字符串缓存
+            # 尝试获取缓存，如果缓存存在则直接返回
+            cached_result = await RedisHandler.get(cache_key)
+            if cached_result:
+                return _deserialize_object(cached_result, cls)
+
+            # 如果缓存未命中，尝试加锁，避免缓存击穿
+            lock = RedisHandler.pool().lock(cache_key, timeout=lock_timeout)  # 锁定缓存键
+            async with lock:
+                # 双重检查：再次确认缓存是否已经被其他请求更新
                 cached_result = await RedisHandler.get(cache_key)
                 if cached_result:
                     return _deserialize_object(cached_result, cls)
 
-            elif redis_type == "hash":
-                # 处理 Redis 哈希缓存
-                cached_result = await RedisHandler.hget(cache_key, field)
-                if cached_result:
-                    return _deserialize_object(cached_result, cls)
+                # 如果没有缓存，调用原函数并将结果缓存
+                result = await func(*args, **kwargs)
 
-            elif redis_type == "list":
-                # 处理 Redis 列表缓存
-                cached_result = await RedisHandler.lrange(cache_key, 0, -1)
-                if cached_result:
-                    return [_deserialize_object(item, cls) for item in cached_result]
-
-            elif redis_type == "set":
-                # 处理 Redis 集合缓存
-                cached_result = await RedisHandler.smembers(cache_key)
-                if cached_result:
-                    return [_deserialize_object(item, cls) for item in cached_result]
-
-            elif redis_type == "sorted_set":
-                # 处理 Redis 有序集合缓存
-                cached_result = await RedisHandler.zrange(cache_key, 0, -1)
-                if cached_result:
-                    return [
-                        {"value": _deserialize_object(item, cls), "score": await RedisHandler.zscore(cache_key, item)}
-                        for item in cached_result]
-
-            # 如果没有缓存，调用原函数并将结果缓存
-            result = await func(*args, **kwargs)
-
-            # 将结果存入缓存
-            if redis_type == "string":
-                await RedisHandler.set(cache_key, _serialize_object(result), expire=ttl)
-            elif redis_type == "hash":
-                await RedisHandler.hset(cache_key, field, _serialize_object(result))
-            elif redis_type == "list":
-                await RedisHandler.rpush(cache_key, *map(_serialize_object, result))
-            elif redis_type == "set":
-                await RedisHandler.sadd(cache_key, *map(_serialize_object, result))
-            elif redis_type == "sorted_set":
-                await RedisHandler.zadd(cache_key,
-                                        *[(item["score"], _serialize_object(item["value"])) for item in result])
+                # 重新存入更新后的数据
+                if ttl is None:
+                    # 如果 ttl 为 None，表示缓存永不过期
+                    await RedisHandler.set(cache_key, _serialize_object(result))
+                else:
+                    # 为避免缓存雪崩，给 ttl 添加随机浮动
+                    random_ttl = ttl + random.randint(0, 300)  # 随机增加过期时间，防止缓存雪崩
+                    if redis_type == "string":
+                        await RedisHandler.set(cache_key, _serialize_object(result), expire=random_ttl)
+                    elif redis_type == "hash":
+                        await RedisHandler.hset(cache_key, field, _serialize_object(result))
+                    elif redis_type == "list":
+                        await RedisHandler.rpush(cache_key, *map(_serialize_object, result))
+                    elif redis_type == "set":
+                        await RedisHandler.sadd(cache_key, *map(_serialize_object, result))
+                    elif redis_type == "sorted_set":
+                        await RedisHandler.zadd(cache_key,
+                                                *[(item["score"], _serialize_object(item["value"])) for item in result])
 
             return result
 
@@ -313,7 +305,7 @@ def cache_result(redis_type: str = "string", ttl: int = 0, key_generator: callab
     return decorator
 
 
-async def update_cache(redis_type: str, key_field: str, value: str, result: Any, ttl: int = 3600, field: str = None,
+async def update_cache(redis_type: str, value: str, result: Any, ttl: int = 3600, field: str = None,
                        cache_key: str = None):
     """
     更新缓存：删除旧的缓存并将更新后的数据存入缓存。
@@ -354,7 +346,7 @@ async def update_cache(redis_type: str, key_field: str, value: str, result: Any,
         await RedisHandler.zadd(cache_key, (result["score"], _serialize_object(result["value"])))
 
 
-async def delete_cache(redis_type: str, key_field: str, value: str, field: str = None, cache_key: str = None):
+async def delete_cache(redis_type: str, value: str, field: str = None, cache_key: str = None):
     """
     删除缓存：根据指定的键字段和值删除缓存。
     :param redis_type: Redis 数据结构类型，支持 'string', 'hash', 'list', 'set', 'sorted_set'
