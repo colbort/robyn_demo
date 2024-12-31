@@ -1,11 +1,17 @@
-### 安装 Babel：
+### 简介
+    该项目是 robyn 框架搭建的 微服务项目
+    中间件：
+    1、mysql
+    2、redis
+    3、nacos （配置中心，服务注册和发现）
+    4、rabbitmq 服务间通行
+    5、traefik 网关
 
+### 运行和部署
 ```shell
-pip install Babel
+git clone 
+cd microservices-demo 
 ```
 
-##### 编译 po 文件为 mo 文件：
-
-```shell
-pybabel compile -d locales
-```
+###### 部署
+deploy 文件夹中有完整的 docker compose 部署方案；只需要修改 微服务镜像既可以运行
