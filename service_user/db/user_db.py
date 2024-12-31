@@ -4,11 +4,18 @@ from tortoise.transactions import in_transaction
 
 from common.logger import logger
 from handler.db_handler import DBHandler
+from handler.redis_handler import cache_result
 from models.nickname import Nickname
 from models.user_account import UserAccount
 
 
 # from tortoise.expressions import Q
+
+def generate_user_cache_key(key_field, *args, **kwargs) -> str:
+    field = kwargs.get(key_field)
+    if field:
+        return f"user:{field}"
+    return f"user:{args[0]}"
 
 
 async def register_user(user: UserAccount) -> Tuple[Optional[int], Optional[str]]:
@@ -27,6 +34,7 @@ async def register_user(user: UserAccount) -> Tuple[Optional[int], Optional[str]
         return user.id, user.username
 
 
+@cache_result(redis_type="string", key_generator=generate_user_cache_key, key_field="email", cls=UserAccount)
 async def select_user_by_email(email: str) -> Optional[UserAccount]:
     try:
         await DBHandler.use_read()
@@ -36,6 +44,7 @@ async def select_user_by_email(email: str) -> Optional[UserAccount]:
         return None
 
 
+@cache_result(redis_type="string", key_generator=generate_user_cache_key, key_field="phone", cls=UserAccount)
 async def select_user_by_phone(phone: str) -> Optional[UserAccount]:
     try:
         await DBHandler.use_read()
@@ -45,6 +54,7 @@ async def select_user_by_phone(phone: str) -> Optional[UserAccount]:
         return None
 
 
+@cache_result(redis_type="string", key_generator=generate_user_cache_key, key_field="username", cls=UserAccount)
 async def select_user_by_username(username: str) -> Optional[UserAccount]:
     try:
         await DBHandler.use_read()
@@ -54,6 +64,7 @@ async def select_user_by_username(username: str) -> Optional[UserAccount]:
         return None
 
 
+@cache_result(redis_type="string", key_generator=generate_user_cache_key, cls=UserAccount)
 async def get_user(user_id: int) -> Optional[UserAccount]:
     try:
         await DBHandler.use_read()

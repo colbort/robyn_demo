@@ -1,3 +1,6 @@
+from datetime import datetime
+from decimal import Decimal
+
 from tortoise import fields, models
 
 
@@ -23,3 +26,25 @@ class UserAccount(models.Model):
     class Meta:
         table = "t_user_accounts"
         table_description = "用户表"
+
+    def to_dict(self):
+        """
+        手动序列化为字典
+        """
+        return {
+            "id": self.id,
+            "username": self.username,
+            "email": self.email,
+            "phone_country_code": self.phone_country_code,
+            "phone": self.phone,
+            "nickname": self.nickname,
+            "avatar": self.avatar,
+            "password_hash": self.password_hash,
+            "salt": self.salt,
+            "balance": str(self.balance) if isinstance(self.balance, Decimal) else self.balance,
+            "points": self.points,
+            "frozen_amount": str(self.frozen_amount) if isinstance(self.frozen_amount, Decimal) else self.frozen_amount,
+            "status": self.status,
+            "created_at": self.created_at.isoformat() if isinstance(self.created_at, datetime) else self.created_at,
+            "updated_at": self.updated_at.isoformat() if isinstance(self.updated_at, datetime) else self.updated_at,
+        }

@@ -29,6 +29,7 @@ class RouterGroup:
 
     def _wrap_handler(self, handler, language: Optional[str] = None, page: Optional[str] = None):
         """包装处理程序以支持动态依赖注入"""
+
         async def wrapped_handler(request: Request):
             # 动态获取语言依赖
             language_value = None
@@ -70,6 +71,7 @@ class RouterGroup:
             page: Optional[str] = None
     ):
         """GET 请求装饰器"""
+
         def decorator(handler):
             wrapped_handler = self._wrap_handler(handler, language, page)
             self.app.get(f"{self.prefix}{endpoint}", const, auth_required)(wrapped_handler)
@@ -85,6 +87,7 @@ class RouterGroup:
             page: Optional[str] = None
     ):
         """POST 请求装饰器"""
+
         def decorator(handler):
             wrapped_handler = self._wrap_handler(handler, language, page)
             self.app.post(f"{self.prefix}{endpoint}", auth_required)(wrapped_handler)
