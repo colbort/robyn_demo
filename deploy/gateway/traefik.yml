@@ -6,6 +6,15 @@ providers:
   docker:
     exposedByDefault: false
 
+# 启用 Let's Encrypt 自动证书管理
+certificatesResolvers:
+  http:
+    acme:
+      email: "tencoco3@gmail.com"  # 设置为你自己的邮箱
+      storage: "acme.json"  # 存储证书的位置
+      httpChallenge:
+        entryPoint: web  # 使用 HTTP Challenge 验证域名
+
 api:
   dashboard: true
   insecure: true

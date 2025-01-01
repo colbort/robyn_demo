@@ -4,7 +4,8 @@ services:
     image: traefik:v2.10
     container_name: mall-traefik
     command:
-      - "--api.insecure=true"
+      - "--api.insecure=true"  # 启用仪表盘，注意：生产环境应关闭
+      - "--providers.docker=true"  # 启用 Docker 服务发现
       - "--log.level=DEBUG"    # 开启 DEBUG 日志
       - "--accesslog=true"     # 开启访问日志
       - "--accesslog.filepath=/logs/access.log" # 保存访问日志到文件
@@ -13,6 +14,8 @@ services:
       - "--entrypoints.websecure.address=:443"
       - "--api.dashboard=true"
       - "--entrypoints.traefik.address=:8080" # Dashboard 默认端口
+      - "--certificatesResolvers.http.acme.email=tencoco3@gmail.com"  # Let's Encrypt 邮箱
+      - "--certificatesResolvers.http.acme.storage=acme.json"  # Let's Encrypt 存储路径
     ports:
       - "80:80"
       - "443:443"
@@ -101,8 +104,10 @@ services:
     container_name: service-core
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.core-router.rule=PathPrefix(`/api/v1/core`)"
+      - "traefik.http.routers.core-router.rule=Host(`${DOMAIN}`) && PathPrefix(`/api/v1/core`)"
       - "traefik.http.routers.core-router.entrypoints=web"
+      - "traefik.http.routers.core-router.tls=true"  # 启用 TLS
+      - "traefik.http.routers.core-router.tls.certresolver=http"  # 使用 Let's Encrypt 证书解析器
       - "traefik.http.services.core-service.loadbalancer.server.port=8000"
     networks:
       - common
@@ -115,8 +120,10 @@ services:
     container_name: service-user
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.user-router.rule=PathPrefix(`/api/v1/user`)"
+      - "traefik.http.routers.user-router.rule=Host(`${DOMAIN}`) && PathPrefix(`/api/v1/user`)"
       - "traefik.http.routers.user-router.entrypoints=web"
+      - "traefik.http.routers.core-router.tls=true"  # 启用 TLS
+      - "traefik.http.routers.core-router.tls.certresolver=http"  # 使用 Let's Encrypt 证书解析器
       - "traefik.http.services.user-service.loadbalancer.server.port=8001"
     networks:
       - common
@@ -129,8 +136,10 @@ services:
     container_name: service-order
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.order-router.rule=PathPrefix(`/api/v1/order`)"
+      - "traefik.http.routers.order-router.rule=Host(`${DOMAIN}`) && PathPrefix(`/api/v1/order`)"
       - "traefik.http.routers.order-router.entrypoints=web"
+      - "traefik.http.routers.core-router.tls=true"  # 启用 TLS
+      - "traefik.http.routers.core-router.tls.certresolver=http"  # 使用 Let's Encrypt 证书解析器
       - "traefik.http.services.order-service.loadbalancer.server.port=8002"
     networks:
       - common
@@ -143,8 +152,10 @@ services:
     container_name: service-product
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.product-router.rule=PathPrefix(`/api/v1/product`)"
+      - "traefik.http.routers.product-router.rule=Host(`${DOMAIN}`) && PathPrefix(`/api/v1/product`)"
       - "traefik.http.routers.product-router.entrypoints=web"
+      - "traefik.http.routers.core-router.tls=true"  # 启用 TLS
+      - "traefik.http.routers.core-router.tls.certresolver=http"  # 使用 Let's Encrypt 证书解析器
       - "traefik.http.services.product-service.loadbalancer.server.port=8003"
     networks:
       - common
@@ -157,8 +168,10 @@ services:
     container_name: service-wallet
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.wallet-router.rule=PathPrefix(`/api/v1/wallet`)"
+      - "traefik.http.routers.wallet-router.rule=Host(`${DOMAIN}`) && PathPrefix(`/api/v1/wallet`)"
       - "traefik.http.routers.wallet-router.entrypoints=web"
+      - "traefik.http.routers.core-router.tls=true"  # 启用 TLS
+      - "traefik.http.routers.core-router.tls.certresolver=http"  # 使用 Let's Encrypt 证书解析器
       - "traefik.http.services.wallet-service.loadbalancer.server.port=8004"
     networks:
       - common
