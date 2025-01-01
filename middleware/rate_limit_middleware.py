@@ -9,6 +9,7 @@ TIME_WINDOW = 60  # 限流的时间窗口，单位为秒
 
 
 def _get_client_ip(request: Request):
+    logger.info(f"请求头 {request.headers}")
     addr = request.headers.get('X-Forwarded-For')
     if addr:
         data = addr.split(',')

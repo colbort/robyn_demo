@@ -15,12 +15,6 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# 复制依赖配置文件
-COPY ./service_order/requirements.txt .
-
-# 安装依赖
-RUN pip install --no-cache-dir -r requirements.txt
-
 # 将项目代码复制到容器内
 COPY common /app/common
 COPY communication /app/communication
@@ -31,6 +25,9 @@ COPY nacos_client /app/nacos_client
 COPY models /app/models
 COPY locales /app/locales
 COPY service_order /app/service_order
+
+# 安装依赖
+RUN pip install --no-cache-dir -r ./service_order/requirements.txt
 
 # 设置 PYTHONPATH 环境变量，确保模块路径可访问
 ENV PYTHONPATH=/app
