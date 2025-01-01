@@ -250,6 +250,20 @@ def cache_result(redis_type: str = "string", ttl: int = None, key_generator: cal
     :param lock_timeout: 锁的超时时间，单位秒
     """
 
+    def get_cached_result(value_type, cache_key, f):
+        """获取缓存结果，根据 Redis 数据类型决定获取方法"""
+        if value_type == "string":
+            return RedisHandler.get(cache_key)
+        elif value_type == "hash":
+            return RedisHandler.hget(cache_key, f)
+        elif value_type == "list":
+            return RedisHandler.lrange(cache_key, 0, -1)
+        elif value_type == "set":
+            return RedisHandler.smembers(cache_key)
+        elif value_type == "sorted_set":
+            return RedisHandler.zrange(cache_key, 0, -1)
+        return None
+
     def decorator(func):
         @functools.wraps(func)
         async def wrapper(*args, **kwargs):
@@ -264,15 +278,15 @@ def cache_result(redis_type: str = "string", ttl: int = None, key_generator: cal
                 cache_key = f"{cache_key}:{field}"
 
             # 尝试获取缓存，如果缓存存在则直接返回
-            cached_result = await RedisHandler.get(cache_key)
+            cached_result = await get_cached_result(redis_type, cache_key, field)
             if cached_result:
                 return _deserialize_object(cached_result, cls)
 
             # 如果缓存未命中，尝试加锁，避免缓存击穿
-            lock = RedisHandler.pool().lock(cache_key, timeout=lock_timeout)  # 锁定缓存键
+            lock = RedisHandler.pool().lock(f"lock_{cache_key}", timeout=lock_timeout)  # 锁定缓存键
             async with lock:
                 # 双重检查：再次确认缓存是否已经被其他请求更新
-                cached_result = await RedisHandler.get(cache_key)
+                cached_result = await get_cached_result(redis_type, cache_key, field)
                 if cached_result:
                     return _deserialize_object(cached_result, cls)
 

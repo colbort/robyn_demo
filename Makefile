@@ -5,7 +5,7 @@ IMAGE_NAME          = mall_python
 # 镜像地址
 REPOSITORY          = docker.live168.xyz/${IMAGE_NAME}
 # 镜像版本
-VERSION=v1.0.6
+VERSION=v1.0.7
 
 build_core:
 	@SERVICE_DIR=service_core; \

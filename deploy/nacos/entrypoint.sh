@@ -2,6 +2,9 @@
 # entrypoint.sh
 
 echo "开始启动 Nacos"
+echo "NACOS_USERNAME: $NACOS_USERNAME"
+echo "NACOS_PASSWORD: $NACOS_PASSWORD"
+echo "NACOS_NAMESPACE: $NACOS_NAMESPACE"
 
 sleep 5
 
@@ -19,14 +22,12 @@ echo "Nacos 启动完成"
 apk update
 apk add jq
 
-PASSWORD="12345678"
-
 # 使用默认用户名和密码登录，获取 Token
 echo "登录 Nacos 并获取 Token..."
 # 发送 POST 请求，捕获返回值和 HTTP 状态码
 response=$(curl -s -w "\n%{http_code}" -X POST "http://localhost:8848/nacos/v1/auth/users/admin" \
-    -d "username=nacos" \
-    -d "password=$PASSWORD")
+    -d "username=$NACOS_USERNAME" \
+    -d "password=$NACOS_PASSWORD")
 
 # 分离返回值和 HTTP 状态码
 response_body=$(echo "$response" | sed '$d')  # 去掉最后一行 (HTTP 状态码)
@@ -46,7 +47,7 @@ fi
 
 response=$(curl -s -X POST 'http://localhost:8848/nacos/v1/auth/login' \
   -d "username=nacos" \
-  -d "password=$PASSWORD")
+  -d "password=$NACOS_PASSWORD")
 
 echo "获取token  $response"
 token=$(echo $response | jq -r '.accessToken')
@@ -60,28 +61,25 @@ echo "Access Token: $token"
 # 读取配置文件内容
 content=$(cat /home/init/mall.yaml)
 
-# 设置命名空间
-NAMESPACE="mall"
-
 # 查询命名空间
 response=$(curl -s -X GET "http://localhost:8848/nacos/v2/console/namespace/list" \
     -H "Authorization: Bearer $token")
 # 使用 jq 解析返回的 JSON 数据，检查命名空间是否存在
-namespaceExists=$(echo "$response" | jq -r --arg NAMESPACE "$NAMESPACE" '.data[] | select(.namespace == $NAMESPACE) | .namespace')
+namespaceExists=$(echo "$response" | jq -r --arg NAMESPACE "$NACOS_NAMESPACE" '.data[] | select(.namespace == $NAMESPACE) | .namespace')
 
-if [ "$namespaceExists" == "$NAMESPACE" ]; then
-    echo "命名空间 '$NAMESPACE' 已存在"
+if [ "$namespaceExists" == "$NACOS_NAMESPACE" ]; then
+    echo "命名空间 '$NACOS_NAMESPACE' 已存在"
 else
   # 创建命名空间并捕获 namespaceId
   response=$(curl -s -X POST "http://localhost:8848/nacos/v2/console/namespace" \
       -H "Authorization: Bearer $token" \
-      -d "namespaceId=$NAMESPACE" \
-      -d "namespaceName=$NAMESPACE")
+      -d "namespaceId=$NACOS_NAMESPACE" \
+      -d "namespaceName=$NACOS_NAMESPACE")
 
   # 检查命名空间创建状态
   echo "创建命名空间 $response"
   if echo "$response" | grep -q '"code":0'; then
-      echo "命名空间 '$NAMESPACE' 创建成功"
+      echo "命名空间 '$NACOS_NAMESPACE' 创建成功"
   else
       echo "命名空间创建失败，返回信息：$response"
       exit 1
@@ -93,7 +91,7 @@ response=$(curl -s -o /dev/null -w "%{http_code}" -X POST "http://localhost:8848
     -H "Authorization: Bearer $token" \
     -d "dataId=mall.yaml" \
     -d "group=DEFAULT_GROUP" \
-    -d "namespaceId=$NAMESPACE" \
+    -d "namespaceId=$NACOS_NAMESPACE" \
     -d "type=yaml" \
     --data-urlencode "content=$content")
 

@@ -2,6 +2,8 @@ from typing import Optional
 
 from robyn import Robyn, Request
 
+from middleware.rate_limit_middleware import RateLimitMiddleware
+
 
 class RouterGroup:
     """路由分组类"""
@@ -10,6 +12,7 @@ class RouterGroup:
         self.app = app
         self.prefix = prefix
         self.dependencies = app.dependencies
+        self.rate_limit_dependency = RateLimitMiddleware()  # 初始化限流依赖
 
     async def _resolve_dependency(self, request: Request, language: Optional[str] = None):
         """解析依赖"""
@@ -27,10 +30,23 @@ class RouterGroup:
                 return await dependency(request)
         return None
 
+    async def _apply_rate_limiting(self, request: Request):
+        """应用限流检查"""
+        rate_limit_response = await self.rate_limit_dependency(request)
+        if rate_limit_response:
+            # 如果限流响应不为空，返回限流错误
+            return rate_limit_response
+        return None
+
     def _wrap_handler(self, handler, language: Optional[str] = None, page: Optional[str] = None):
         """包装处理程序以支持动态依赖注入"""
 
         async def wrapped_handler(request: Request):
+            # 先执行限流
+            rate_limit_response = await self._apply_rate_limiting(request)
+            if rate_limit_response:
+                return rate_limit_response  # 如果限流拒绝请求，直接返回限流响应
+
             # 动态获取语言依赖
             language_value = None
             if language:

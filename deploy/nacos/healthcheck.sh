@@ -1,9 +1,12 @@
 #!/bin/sh
 
+echo "NACOS_USERNAME: $NACOS_USERNAME"
+echo "NACOS_PASSWORD: $NACOS_PASSWORD"
+
 # 获取 Token
 token=$(curl -s -X POST "http://localhost:8848/nacos/v1/auth/login" \
-        -d "username=nacos" \
-        -d "password=12345678" | jq -r '.accessToken')
+        -d "username=$NACOS_USERNAME" \
+        -d "password=$NACOS_PASSWORD" | jq -r '.accessToken')
 
 # 检查 Token 是否有效
 if [ -z "$token" ] || [ "$token" = "null" ]; then
