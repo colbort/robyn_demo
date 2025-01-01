@@ -1,0 +1,7 @@
+action_get_user_info = "user.get_user_info"
+action_freeze_balance = "user.freeze_balance"
+action_unfreeze_balance = "user.unfreeze_balance"
+action_freeze_stock = "product.freeze_stock"
+action_unfreeze_stock = "product.unfreeze_stock"
+action_fetch_product_details = "product.fetch_product_details"
+action_purchase_product = "product.purchase_product"

@@ -1,6 +1,6 @@
 from typing import Optional
 
-from robyn import Robyn, Request
+from robyn import Robyn, Request, SubRouter
 
 from middleware.rate_limit_middleware import RateLimitMiddleware
 
@@ -14,7 +14,7 @@ class RouterGroup:
         self.dependencies = app.dependencies
         self.rate_limit_dependency = RateLimitMiddleware()  # 初始化限流依赖
 
-    async def _resolve_dependency(self, request: Request, language: Optional[str] = None):
+    async def __resolve_dependency(self, request: Request, language: Optional[str] = None):
         """解析依赖"""
         if language:
             dependency = self.dependencies.global_dependency_map.get(language)
@@ -22,7 +22,7 @@ class RouterGroup:
                 return await dependency(request)
         return None
 
-    async def _parse_pagination(self, request: Request, pagination: Optional[str] = None):
+    async def __parse_pagination(self, request: Request, pagination: Optional[str] = None):
         """解析分页参数并绑定到 request"""
         if pagination:
             dependency = self.dependencies.global_dependency_map.get(pagination)
@@ -30,7 +30,7 @@ class RouterGroup:
                 return await dependency(request)
         return None
 
-    async def _apply_rate_limiting(self, request: Request):
+    async def __apply_rate_limiting(self, request: Request):
         """应用限流检查"""
         rate_limit_response = await self.rate_limit_dependency(request)
         if rate_limit_response:
@@ -38,24 +38,24 @@ class RouterGroup:
             return rate_limit_response
         return None
 
-    def _wrap_handler(self, handler, language: Optional[str] = None, page: Optional[str] = None):
+    def __wrap_handler(self, handler, language: Optional[str] = None, page: Optional[str] = None):
         """包装处理程序以支持动态依赖注入"""
 
         async def wrapped_handler(request: Request):
             # 先执行限流
-            rate_limit_response = await self._apply_rate_limiting(request)
+            rate_limit_response = await self.__apply_rate_limiting(request)
             if rate_limit_response:
                 return rate_limit_response  # 如果限流拒绝请求，直接返回限流响应
 
             # 动态获取语言依赖
             language_value = None
             if language:
-                language_value = await self._resolve_dependency(request, language)
+                language_value = await self.__resolve_dependency(request, language)
 
             # 动态获取分页参数
             page_value = None
             if page:
-                page_value = await self._parse_pagination(request, page)
+                page_value = await self.__parse_pagination(request, page)
 
             # 获取处理函数参数列表
             handler_params = handler.__code__.co_varnames[:handler.__code__.co_argcount]
@@ -89,7 +89,7 @@ class RouterGroup:
         """GET 请求装饰器"""
 
         def decorator(handler):
-            wrapped_handler = self._wrap_handler(handler, language, page)
+            wrapped_handler = self.__wrap_handler(handler, language, page)
             self.app.get(f"{self.prefix}{endpoint}", const, auth_required)(wrapped_handler)
             return handler
 
@@ -105,7 +105,7 @@ class RouterGroup:
         """POST 请求装饰器"""
 
         def decorator(handler):
-            wrapped_handler = self._wrap_handler(handler, language, page)
+            wrapped_handler = self.__wrap_handler(handler, language, page)
             self.app.post(f"{self.prefix}{endpoint}", auth_required)(wrapped_handler)
             return handler
 

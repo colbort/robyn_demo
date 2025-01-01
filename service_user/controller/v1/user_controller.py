@@ -14,11 +14,11 @@ from service_user.services.user_service import *
 class UserController:
     def __init__(self, app: Robyn):
         self.app = RouterGroup(app, "/api/v1/user/")
-        self._setup_routes()
+        self.__setup_routes()
 
-    def _setup_routes(self):
+    def __setup_routes(self):
         @self.app.post("register")
-        async def _register(request: Request):
+        async def __register(request: Request):
             try:
                 data = ReqRegister(**request.json())
                 user_id, username = await register_user(data.email, data.phone_country_code, data.phone, data.password)
@@ -35,7 +35,7 @@ class UserController:
                 return error(message=f"用户注册失败; {e}")
 
         @self.app.post("login", language="language")
-        async def _login(request: Request, language: str):
+        async def __login(request: Request, language: str):
             try:
                 logger.info(f"Detected language: {language} ")
                 data = ReqLogin(**request.json())
@@ -61,7 +61,7 @@ class UserController:
                 return error(message=f"登录失败; {e}")
 
         @self.app.post("logout", auth_required=True)
-        async def _logout(request: Request):
+        async def __logout(request: Request):
             try:
                 user_id = get_user_id(request.identity)
             except Exception as e:
@@ -71,7 +71,7 @@ class UserController:
                 return error(message=f"退出登录失败; {e}")
 
         @self.app.get("info", auth_required=True)
-        async def _get_user(request: Request):
+        async def __get_user(request: Request):
             try:
                 user_id = get_user_id(request.identity)
                 user = await get_user_info(user_id)
@@ -96,7 +96,7 @@ class UserController:
                 return error(message=f"获取用户信息失败; {e}")
 
         @self.app.post("update", auth_required=True)
-        async def _update(request: Request):
+        async def __update(request: Request):
             """
             更新用户信息
             :param request:

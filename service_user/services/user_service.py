@@ -5,6 +5,7 @@ from tortoise.exceptions import IntegrityError
 
 import service_user.db.user_db as db
 from common.logger import logger
+from communication.mq_action import *
 from handler.router_instance import router
 from models.user_account import UserAccount
 from service_user.request.req_update import ReqUpdate
@@ -87,7 +88,7 @@ async def logout_user(user_id: str) -> str:
     return "Logout successful"
 
 
-@router.register_handler("get_user_info")
+@router.register_handler(action_get_user_info)
 async def get_user_info(user_id: str) -> Optional[UserAccount]:
     return await db.get_user(user_id)
 
@@ -111,7 +112,7 @@ async def update_user_info(user_id: int, data: ReqUpdate) -> bool:
     return await db.update_user(user)
 
 
-async def _freeze_balance(user_id: int, amount: float):
+async def __freeze_balance(user_id: int, amount: float):
     """冻结用户余额"""
     user = await db.get_user(user_id)
     if not user:
@@ -125,7 +126,7 @@ async def _freeze_balance(user_id: int, amount: float):
     return {"message": "Balance frozen successfully"}
 
 
-async def _unfreeze_balance(user_id: int, amount: float):
+async def __unfreeze_balance(user_id: int, amount: float):
     """解冻用户余额"""
     user = await db.get_user(user_id)
     if not user:
@@ -137,15 +138,15 @@ async def _unfreeze_balance(user_id: int, amount: float):
     return {"message": "Balance unfrozen successfully"}
 
 
-@router.register_handler("freeze_balance")
-async def _handle_freeze_balance(data):
+@router.register_handler(action_freeze_balance)
+async def __handle_freeze_balance(data):
     user_id = data["user_id"]
     amount = data["amount"]
-    return await _freeze_balance(user_id, amount)
+    return await __freeze_balance(user_id, amount)
 
 
-@router.register_handler("unfreeze_balance")
-async def _handle_unfreeze_balance(data):
+@router.register_handler(action_unfreeze_balance)
+async def __handle_unfreeze_balance(data):
     user_id = data["user_id"]
     amount = data["amount"]
-    return await _unfreeze_balance(user_id, amount)
+    return await __unfreeze_balance(user_id, amount)

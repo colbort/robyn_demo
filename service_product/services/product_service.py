@@ -1,3 +1,4 @@
+from communication.mq_action import *
 from handler.router_instance import router
 from service_product.db.product_db import *
 
@@ -7,7 +8,7 @@ def fetch_all_products():
     return get_all_products()
 
 
-@router.register_handler("fetch_product_details")
+@router.register_handler(action_fetch_product_details)
 def fetch_product_details(product_id: str):
     """获取商品详情"""
     product = get_product_by_id(product_id)
@@ -16,7 +17,7 @@ def fetch_product_details(product_id: str):
     return product.dict()
 
 
-@router.register_handler("purchase_product")
+@router.register_handler(action_purchase_product)
 def purchase_product(product_id: str, quantity: int):
     """购买商品并更新库存"""
     if quantity <= 0:
@@ -51,14 +52,14 @@ def unfreeze_stock(product_id: str, quantity: int):
     return {"message": "Stock unfrozen successfully"}
 
 
-@router.register_handler("freeze_stock")
+@router.register_handler(action_freeze_stock)
 def handle_freeze_stock(data):
     product_id = data["product_id"]
     quantity = data["quantity"]
     return freeze_stock(product_id, quantity)
 
 
-@router.register_handler("unfreeze_stock")
+@router.register_handler(action_unfreeze_stock)
 def handle_unfreeze_stock(data):
     product_id = data["product_id"]
     quantity = data["quantity"]

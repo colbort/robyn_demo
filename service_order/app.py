@@ -23,7 +23,7 @@ logger.setLevel(logging.INFO)
 # logger.setLevel(logging.INFO)
 
 
-def _init_config() -> NacosWrapper:
+def __init_config() -> NacosWrapper:
     nacos = NacosWrapper(
         server_address=SERVER_ADDRESS,
         username=USERNAME,
@@ -34,7 +34,7 @@ def _init_config() -> NacosWrapper:
     return nacos
 
 
-def _init_rabbitmq():
+def __init_rabbitmq():
     # 启动 MQ 消费
     consumer = MQConsumer(
         host=config.Rabbitmq.host(),
@@ -57,7 +57,7 @@ def _init_rabbitmq():
 
 
 # 初始化数据库、redis
-async def _init_services():
+async def __init_services():
     # 初始化 MYSQL
     await DBHandler.init(config.Mysql.write(), config.Mysql.read())
     # 初始化 Redis
@@ -70,14 +70,14 @@ async def _init_services():
 
 
 if __name__ == "__main__":
-    nacos = _init_config()
+    nacos = __init_config()
     # 服务注册
     nacos.register_service(
         service_name=config.Order.serviceName(),
         port=config.Order.servicePort(),
     )
-    _init_rabbitmq()
-    asyncio.run(_init_services())
+    __init_rabbitmq()
+    asyncio.run(__init_services())
     # 启动 HTTP 服务
     app = Robyn(__file__)
     app.configure_authentication(AuthenticationMiddleware())

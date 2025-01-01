@@ -11,11 +11,11 @@ from service_core.services.core_service import *
 class CoreController:
     def __init__(self, app: Robyn):
         self.app = RouterGroup(app, "/api/v1/core/")
-        self._setup_routes()
+        self.__setup_routes()
 
-    def _setup_routes(self):
+    def __setup_routes(self):
         @self.app.get("settings")
-        async def _settings(request: Request):
+        async def __settings(request: Request):
             data = request.json()
             user_id = data.get("user_id")
             username = data.get("username")
@@ -28,7 +28,7 @@ class CoreController:
             }
 
         @self.app.get("version")
-        async def _version(request: Request):
+        async def __version(request: Request):
             data = request.json()
             user_id = data.get("user_id")
             username = data.get("username")
@@ -41,7 +41,7 @@ class CoreController:
             }
 
         @self.app.get('time_sync')
-        async def time_sync():
+        async def __time_sync():
             """
             时间戳同步
             返回服务端 UTC 时间戳（毫秒）。
