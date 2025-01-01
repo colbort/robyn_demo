@@ -1,9 +1,10 @@
-import logging
 import time
 from collections import defaultdict
 from robyn import Request
 
-MAX_REQUESTS_PER_MINUTE = 60  # 每分钟最多请求 60 次
+from common.logger import logger
+
+MAX_REQUESTS_PER_MINUTE = 30  # 每分钟最多请求 60 次
 TIME_WINDOW = 60  # 限流的时间窗口，单位为秒
 
 
@@ -16,7 +17,7 @@ class RateLimitMiddleware:
     async def __call__(self, request: Request):
         """调用该类实例时，检查请求频率"""
         ip = request.ip_addr
-        logging.info(f"访问地址  {ip}")
+        logger.info(f"访问地址  {ip}")
         if ip:
             # 获取当前时间戳
             current_time = time.time()
