@@ -10,32 +10,6 @@ class NacosWrapper:
     def __init__(self, server_address: str, username: str, password: str, namespace: str):
         self.client = NacosClient(server_address, username=username, password=password, namespace=namespace)
 
-    def __get_public_ip(self):
-        services = [
-            "https://ipinfo.io/ip",
-            "http://whatismyip.akamai.com",
-            "https://api64.ipify.org",
-            "https://checkip.amazonaws.com",
-        ]
-        for service in services:
-            try:
-                response = requests.get(service, timeout=5)
-                if response.status_code == 200:
-                    return response.text.strip()
-            except requests.RequestException as e:
-                print(f"Failed to fetch public IP from {service}: {e}")
-        raise RuntimeError("Unable to fetch public IP from all sources")
-
-    def __get_local_ip(self):
-        hostname = socket.gethostname()
-        return socket.gethostbyname(hostname)
-
-    def __get_service_ip(self):
-        try:
-            return self.__get_public_ip()
-        except RuntimeError:
-            return self.__get_local_ip()
-
     def get_config(self, data_id: str, group: str):
         config = self.client.get_config(data_id, group)
         if not config:
@@ -67,3 +41,31 @@ class NacosWrapper:
         if not instances:
             raise RuntimeError(f"No instances found for service: {service_name}")
         return instances[0]["ip"], instances[0]["port"]
+
+    @classmethod
+    def __get_public_ip(cls):
+        services = [
+            "https://ipinfo.io/ip",
+            "http://whatismyip.akamai.com",
+            "https://api64.ipify.org",
+            "https://checkip.amazonaws.com",
+        ]
+        for service in services:
+            try:
+                response = requests.get(service, timeout=5)
+                if response.status_code == 200:
+                    return response.text.strip()
+            except requests.RequestException as e:
+                print(f"Failed to fetch public IP from {service}: {e}")
+        raise RuntimeError("Unable to fetch public IP from all sources")
+
+    @classmethod
+    def __get_local_ip(cls):
+        hostname = socket.gethostname()
+        return socket.gethostbyname(hostname)
+
+    def __get_service_ip(self):
+        try:
+            return self.__get_public_ip()
+        except RuntimeError:
+            return self.__get_local_ip()

@@ -35,19 +35,19 @@ class MQPublisher:
         self.callback_queue = {}
         self.channel.basic_consume(
             queue=self.response_queue,
-            on_message_callback=self._on_response,
+            on_message_callback=self.__on_response,
             auto_ack=True
         )
         # 启动一个线程或后台任务定期调用 process_data_events
-        threading.Thread(target=self._keep_alive, daemon=True).start()
+        threading.Thread(target=self.__keep_alive, daemon=True).start()
 
-    def _keep_alive(self):
+    def __keep_alive(self):
         """保持心跳"""
         while not self.connection.is_closed:
             self.connection.process_data_events(time_limit=1)
             time.sleep(10)
 
-    def reconnect(self):
+    def __reconnect(self):
         """重连机制"""
         while True:
             try:
@@ -57,7 +57,7 @@ class MQPublisher:
                 print(f"Reconnection failed: {e}")
                 time.sleep(2)  # 重连前等待
 
-    def _on_response(self, ch, method, properties, body):
+    def __on_response(self, ch, method, properties, body):
         """处理 RPC 响应"""
         correlation_id = properties.correlation_id
         if correlation_id in self.callback_queue:
@@ -67,14 +67,14 @@ class MQPublisher:
         """发布消息"""
         try:
             if self.connection.is_closed:
-                self.reconnect()  # 重新连接
-            return self._publish_internal(queue_name, message, rpc, timeout)
+                self.__reconnect()  # 重新连接
+            return self.__publish_internal(queue_name, message, rpc, timeout)
         except Exception as e:
             print(f"message publish failed {e}")
-            self.reconnect()
-            return self._publish_internal(queue_name, message, rpc, timeout)
+            self.__reconnect()
+            return self.__publish_internal(queue_name, message, rpc, timeout)
 
-    def _publish_internal(self, queue_name, message: Message, rpc, timeout):
+    def __publish_internal(self, queue_name, message: Message, rpc, timeout):
         if rpc:
             correlation_id = str(uuid.uuid4())
             self.callback_queue[correlation_id] = None
@@ -122,7 +122,7 @@ class LazyMQPublisher:
         self._lock = threading.Lock()
         self._is_initializing = False  # 标记是否正在初始化
 
-    def _initialize(self):
+    def __initialize(self):
         """初始化 MQPublisher 实例"""
         if self._instance is not None:
             return
@@ -147,5 +147,5 @@ class LazyMQPublisher:
 
     def __getattr__(self, name):
         if self._instance is None:
-            self._initialize()
+            self.__initialize()
         return getattr(self._instance, name)

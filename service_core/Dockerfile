@@ -16,14 +16,14 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # 将项目代码复制到容器内
-COPY common /app/common
-COPY communication /app/communication
-COPY config /app/config
-COPY handler /app/handler
-COPY middleware /app/middleware
-COPY nacos_client /app/nacos_client
-COPY models /app/models
-COPY locales /app/locales
+COPY common /app/service_core/common
+COPY communication /app/service_core/communication
+COPY config /app/service_core/config
+COPY handler /app/service_core/handler
+COPY middleware /app/service_core/middleware
+COPY nacos_client /app/service_core/nacos_client
+COPY models /app/service_core/models
+COPY locales /app/service_core/locales
 COPY service_core /app/service_core
 
 # 安装依赖

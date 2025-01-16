@@ -1,4 +1,7 @@
+import traceback
+
 from tortoise import Tortoise, BaseDBAsyncClient
+from tortoise.exceptions import IntegrityError, OperationalError, DBConnectionError
 
 from common.logger import logger
 from models import models
@@ -70,3 +73,29 @@ class DBHandler:
         切换到从库（读库）连接池
         """
         return DBHandler._connections["read"]
+
+
+async def handle_db_operation(func, *args, **kwargs):
+    """
+    封装数据库操作异常处理
+    :param func: 数据库操作的函数
+    :param args: 函数参数
+    :param kwargs: 函数关键字参数
+    :return: 函数执行结果
+    """
+    try:
+        return await func(*args, **kwargs)
+    except IntegrityError as e:
+        logger.error(f"IntegrityError occurred while executing {func.__name__}: {str(e)}")
+        logger.error(f"SQL Error: {e.__cause__}")
+        logger.error(f"Stack trace: {traceback.format_exc()}")
+        raise e
+    except OperationalError as e:
+        logger.error(f"OperationalError occurred while executing {func.__name__}: {str(e)}")
+        logger.error(f"SQL Error: {e.__cause__}")
+        logger.error(f"Stack trace: {traceback.format_exc()}")
+        raise e
+    except Exception as e:
+        logger.error(f"Unknown error occurred while executing {func.__name__}: {str(e)}")
+        logger.error(f"Stack trace: {traceback.format_exc()}")
+        raise e

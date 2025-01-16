@@ -17,14 +17,14 @@ RUN apt-get update && apt-get install -y \
 
 
 # 将项目代码复制到容器内
-COPY common /app/common
-COPY communication /app/communication
-COPY config /app/config
-COPY handler /app/handler
-COPY middleware /app/middleware
-COPY nacos_client /app/nacos_client
-COPY models /app/models
-COPY locales /app/locales
+COPY common /app/service_wallet/common
+COPY communication /app/service_wallet/communication
+COPY config /app/service_wallet/config
+COPY handler /app/service_wallet/handler
+COPY middleware /app/service_wallet/middleware
+COPY nacos_client /app/service_wallet/nacos_client
+COPY models /app/service_wallet/models
+COPY locales /app/service_wallet/locales
 COPY service_wallet /app/service_wallet
 
 # 安装依赖

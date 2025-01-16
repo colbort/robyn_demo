@@ -3,7 +3,7 @@ from typing import Optional, Tuple
 from tortoise.transactions import in_transaction
 
 from common.logger import logger
-from handler.db_handler import DBHandler
+from handler.db_handler import DBHandler, handle_db_operation
 from handler.redis_handler import cache_result, delete_cache
 from models.nickname import Nickname
 from models.user_account import UserAccount
@@ -88,7 +88,7 @@ async def update_user(user: UserAccount) -> bool:
 async def update_user_balance(user: UserAccount) -> bool:
     try:
         await DBHandler.use_write()
-        await user.save()
+        await handle_db_operation(user.save)
         await delete_cache(redis_type="string", cache_key=f"user:{user.id}")
         await delete_cache(redis_type="string", cache_key=f"user:{user.phone}")
         await delete_cache(redis_type="string", cache_key=f"user:{user.email}")
@@ -96,4 +96,4 @@ async def update_user_balance(user: UserAccount) -> bool:
         return True
     except Exception as e:
         logger.error(f'更新用户余额失败 {e}')
-        return False
+        raise e
