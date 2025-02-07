@@ -7,7 +7,6 @@ from common.logger import logger
 
 class SagaStep:
     """单个事务步骤"""
-
     def __init__(self, action: Callable, compensate: Callable, max_retry=3, retry_delay=2, timeout=5):
         self.action = action  # 正常操作
         self.compensate = compensate  # 补偿操作
@@ -51,7 +50,6 @@ class SagaStep:
 
 class SagaManager:
     """SAGA 管理器"""
-
     def __init__(self):
         self.steps = []
         self.compensations = []
