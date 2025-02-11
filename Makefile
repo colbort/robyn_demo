@@ -52,6 +52,15 @@ build_wallet:
     docker push ${REPOSITORY}/$$SERVICE_DIR:$(VERSION); \
     docker rmi ${REPOSITORY}/$$SERVICE_DIR:$(VERSION);
 
+install:
+	@for service in $(SERVICES); do \
+		echo "Installing dependencies for $$service..."; \
+		pushd $$service > /dev/null && \
+		$(VENV_ACTIVATE) && \
+		pip install -r requirements.txt && \
+		popd > /dev/null; \
+	done
+	@echo "All services' dependencies installed."
 
 upgrade:
 	@for service in $(SERVICES); do \
