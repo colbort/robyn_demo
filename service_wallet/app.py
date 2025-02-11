@@ -9,6 +9,7 @@ from config.settings import *
 from handler.db_handler import DBHandler
 from handler.redis_handler import RedisHandler
 from handler.router_instance import router
+from handler.user_cache_handler import userCache
 from nacos_client.nacos_client import NacosWrapper
 from router.wallet_router import setup_routes
 
@@ -55,6 +56,8 @@ async def __init_services():
         db=config.Redis.db(),
         password=config.Redis.password()
     )
+    # 初始化内存缓存
+    await userCache.init_cache_handler()
 
 
 if __name__ == "__main__":

@@ -55,8 +55,6 @@ def __init_rabbitmq():
         password=config.Rabbitmq.password(),
     )
     publisher.publisher.connect()
-    # 初始化内存缓存
-    await userCache.init_cache_handler()
 
 
 # 初始化数据库、redis
@@ -70,6 +68,8 @@ async def __init_services():
         db=config.Redis.db(),
         password=config.Redis.password()
     )
+    # 初始化内存缓存
+    await userCache.init_cache_handler()
 
 
 if __name__ == "__main__":
