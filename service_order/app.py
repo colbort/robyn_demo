@@ -10,6 +10,7 @@ from config.settings import *
 from handler.db_handler import DBHandler
 from handler.redis_handler import RedisHandler
 from handler.router_instance import router
+from handler.user_cache_handler import userCache
 from middleware.auth_middleware import AuthenticationMiddleware
 from nacos_client.nacos_client import NacosWrapper
 from service_order.router.order_router import setup_routes
@@ -54,6 +55,8 @@ def __init_rabbitmq():
         password=config.Rabbitmq.password(),
     )
     publisher.publisher.connect()
+    # 初始化内存缓存
+    await userCache.init_cache_handler()
 
 
 # 初始化数据库、redis

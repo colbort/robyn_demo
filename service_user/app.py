@@ -64,6 +64,7 @@ async def __init_services():
         db=config.Redis.db(),
         password=config.Redis.password()
     )
+    # 初始化内存缓存
     await userCache.init_cache_handler()
 
 
@@ -86,6 +87,5 @@ if __name__ == "__main__":
     dependencies.add_global_dependency(pagination=page_handler)
     app = Robyn(__file__, dependencies=dependencies)
     app.configure_authentication(AuthenticationMiddleware())
-    # initCors(app)
     setup_routes(app)
     app.start(host="0.0.0.0", port=config.User.servicePort())
