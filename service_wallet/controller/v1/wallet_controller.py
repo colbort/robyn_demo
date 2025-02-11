@@ -1,6 +1,5 @@
 from robyn import Robyn, Request
 
-from common.cjwt import create_token
 from common.router_group import RouterGroup
 from service_wallet.services.wallet_service import *
 
@@ -19,9 +18,6 @@ class WalletController:
             password = data.get("password")
             return {
                 "message": withdraws(user_id, username, password),
-                "data": {
-                    "token": create_token(user_id)
-                }
             }
 
         @self.app.get("recharges")
@@ -32,7 +28,4 @@ class WalletController:
             password = data.get("password")
             return {
                 "message": recharges(username, password),
-                "data": {
-                    "token": create_token(user_id, username)
-                }
             }

@@ -9,7 +9,9 @@ from robyn.authentication import BearerGetter
 from robyn.robyn import Identity, Response, Headers
 from robyn.status_codes import HTTP_401_UNAUTHORIZED
 
+from common import aes
 from common.cjwt import decode_token
+from handler.user_cache_handler import userCache
 
 
 class AuthenticationMiddleware(AuthenticationHandler, ABC):
@@ -27,9 +29,11 @@ class AuthenticationMiddleware(AuthenticationHandler, ABC):
                 raise ValueError(payload["error"])
             user_id = payload.get("user_id")
             username = payload.get("username")
+            key = userCache.get_cache_value(username)
             user_data = {
                 "user_id": user_id,
                 "username": username,
+                "extend": aes.decrypt(payload.get("extend"), key[0:32])
             }
             claims = json.dumps(user_data)
             return Identity({"claims": claims})

@@ -51,3 +51,6 @@ service_wallet:
 
 locales:
   path: ./locales
+
+token:
+  secret_key: ZsdFT0rlf8RhPr4jMgzftMbz-QDzDzR58JXVDUEYWXc

@@ -1,4 +1,4 @@
-from typing import Optional, Tuple
+from typing import Optional, Tuple, List
 
 from tortoise.transactions import in_transaction
 
@@ -24,14 +24,14 @@ async def register_user(user: UserAccount) -> Tuple[Optional[int], Optional[str]
         nickname = await Nickname.filter(deleted=False).order_by("usage_count", "id").using_db(conn).first()
         if not nickname:
             logger.error("No available nickname found!")
-            return None, None
+            return None, None, None
 
         # 更新昵称使用计数
         nickname.usage_count += 1
         await nickname.save(using_db=conn)
         user.nickname = nickname.nickname
         await user.save(using_db=conn)
-        return user.id, user.username
+        return user.id, user.username, user.password_hash
 
 
 @cache_result(redis_type="string", key_generator=generate_user_cache_key, key_field="email", cls=UserAccount)
@@ -96,4 +96,13 @@ async def update_user_balance(user: UserAccount) -> bool:
         return True
     except Exception as e:
         logger.error(f'更新用户余额失败 {e}')
+        raise e
+
+
+async def select_all() -> List[UserAccount]:
+    try:
+        await DBHandler.use_read()
+        users = await UserAccount.all()
+        return users
+    except Exception as e:
         raise e

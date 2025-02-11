@@ -2,7 +2,6 @@ from datetime import datetime
 
 from robyn import Robyn, Request
 
-from common.cjwt import create_token
 from common.response import success
 from common.router_group import RouterGroup
 from service_core.services.core_service import *
@@ -22,9 +21,6 @@ class CoreController:
             password = data.get("password")
             return {
                 "message": settings(user_id, username, password),
-                "data": {
-                    "token": create_token(user_id)
-                }
             }
 
         @self.app.get("version")
@@ -35,9 +31,6 @@ class CoreController:
             password = data.get("password")
             return {
                 "message": version(username, password),
-                "data": {
-                    "token": create_token(user_id, username)
-                }
             }
 
         @self.app.get('time_sync')

@@ -6,6 +6,7 @@ from common.identify_parse import get_user_id
 from common.response import fail, success, error
 from common.router_group import RouterGroup
 from handler.translator_handler import Translator
+from handler.user_cache_handler import userCache
 from service_user.request.req_login import ReqLogin
 from service_user.request.req_register import ReqRegister
 from service_user.services.user_service import *
@@ -21,11 +22,11 @@ class UserController:
         async def __register(request: Request):
             try:
                 data = ReqRegister(**request.json())
-                user_id, username = await register_user(data.email, data.phone_country_code, data.phone, data.password)
+                user_id, username, password_hash = await register_user(data.email, data.phone_country_code, data.phone, data.password)
                 if not user_id or not username:
                     return fail(message="创建用户失败")
                 else:
-                    return success(data={"token": create_token(user_id, username)})
+                    return success(data={"token": create_token(user_id, username, password_hash, "")})
             except ValidationError as e:
                 return fail(code=400, message=f"参数验证失败 {e.errors()}")
             except Exception as e:
@@ -39,7 +40,7 @@ class UserController:
             try:
                 logger.info(f"Detected language: {language} ")
                 data = ReqLogin(**request.json())
-                user_id, username = await login_user(
+                user_id, username, password_hash = await login_user(
                     email=data.email,
                     phone_country_code=data.phone_country_code,
                     phone=data.phone,
@@ -51,7 +52,7 @@ class UserController:
                 if not user_id or not username:
                     return fail(message="登录失败")
                 else:
-                    return success(data={"token": create_token(user_id, username)})
+                    return success(data={"token": create_token(user_id, username, password_hash, "1234")})
             except ValidationError as e:
                 return fail(code=400, message=f"参数验证失败 {e.errors()}")
             except Exception as e:
@@ -64,6 +65,7 @@ class UserController:
         async def __logout(request: Request):
             try:
                 user_id = get_user_id(request.identity)
+            # 清除 token 等登录信息
             except Exception as e:
                 logger.error(f'退出登录失败 {e}')
                 import traceback
@@ -75,6 +77,7 @@ class UserController:
             try:
                 user_id = get_user_id(request.identity)
                 user = await get_user_info(user_id)
+                userCache.publish_mq(user.username, user.password_hash)
                 if user:
                     return success(data={
                         "user_id": user.id,

@@ -17,7 +17,7 @@ async def register_user(
         phone_country_code: str,
         phone: str,
         password: str,
-) -> Tuple[Optional[int], Optional[str]]:
+) -> Tuple[Optional[int], Optional[str], Optional[str]]:
     if not email:
         email = ''
     else:
@@ -48,13 +48,13 @@ async def register_user(
     except IntegrityError as e:
         # 捕获数据库唯一性约束错误
         logger.error(f"Integrity Error during user registration: {e}")
-        return None, None
+        return None, None, None
     except Exception as e:
         # 捕获其他错误
         import traceback
         logger.error(f"Unexpected error during user registration: {e}")
         logger.error(traceback.format_exc())
-        return None, None
+        return None, None, None
 
 
 async def login_user(
@@ -63,7 +63,7 @@ async def login_user(
         phone: str,
         username: str,
         password: str,
-) -> Tuple[Optional[int], Optional[str]]:
+) -> Tuple[Optional[int], Optional[str], Optional[str]]:
     if email:
         user = await db.select_user_by_email(email=email)
     if phone:
@@ -74,7 +74,7 @@ async def login_user(
         raise ValueError('用户名或密码错误')
     if not verify_password(password=password, salt=user.salt, hashed_password=user.password_hash):
         raise ValueError('用户名或密码错误')
-    return user.id, user.username
+    return user.id, user.username, user.password_hash
 
 
 async def logout_user(user_id: str) -> str:

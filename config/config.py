@@ -36,7 +36,6 @@ class Config:
         :return: 对应的配置字典
         """
         try:
-            print("11111111111")
             if item in self._config_data:
                 return self._config_data[item]
             raise AttributeError(f"No such configuration section: {item}")
@@ -171,3 +170,9 @@ class Locales:
     @staticmethod
     def path() -> str:
         return config.get("locales", "path")
+
+
+class Token:
+    @staticmethod
+    def secret_key() -> str:
+        return config.get("token", "secret_key")

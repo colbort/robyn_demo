@@ -10,6 +10,7 @@ from handler.db_handler import DBHandler
 from handler.redis_handler import RedisHandler
 from handler.router_instance import router
 from handler.translator_handler import Translator
+from handler.user_cache_handler import userCache
 from middleware.auth_middleware import AuthenticationMiddleware
 from middleware.i18n_middleware import i18n_handler
 from middleware.page_middleware import page_handler
@@ -63,6 +64,7 @@ async def __init_services():
         db=config.Redis.db(),
         password=config.Redis.password()
     )
+    await userCache.init_cache_handler()
 
 
 if __name__ == "__main__":
