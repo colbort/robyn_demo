@@ -22,7 +22,12 @@ class UserController:
         async def __register(request: Request):
             try:
                 data = ReqRegister(**request.json())
-                user_id, username, password_hash = await register_user(data.email, data.phone_country_code, data.phone, data.password)
+                user_id, username, password_hash = await register_user(
+                    data.email,
+                    data.phone_country_code,
+                    data.phone,
+                    data.password,
+                )
                 if not user_id or not username:
                     return fail(message="创建用户失败")
                 else:
