@@ -16,7 +16,7 @@ class DBHandler:
         初始化数据库连接池，提前加载主库和从库
         """
         try:
-            schema = "mysql"
+            schema = "mysql"  # 这里可以配置 mysql/postgres
             db_config = {
                 "connections": {
                     "default": f"{schema}://{db_write['user']}:{db_write['password']}@{db_write['host']}:{db_write['port']}/{db_write['name']}",
