@@ -1,7 +1,7 @@
 import traceback
 
 from tortoise import Tortoise, BaseDBAsyncClient
-from tortoise.exceptions import IntegrityError, OperationalError, DBConnectionError
+from tortoise.exceptions import IntegrityError, OperationalError
 
 from common.logger import logger
 from models import models
@@ -16,28 +16,11 @@ class DBHandler:
         初始化数据库连接池，提前加载主库和从库
         """
         try:
+            schema = "mysql"
             db_config = {
                 "connections": {
-                    "default": {
-                        "engine": "tortoise.backends.mysql",
-                        "credentials": {
-                            "host": db_write['host'],
-                            "port": db_write['port'],
-                            "user": db_write['user'],
-                            "password": db_write['password'],
-                            "database": db_write['name'],
-                        }
-                    },
-                    "read": {
-                        "engine": "tortoise.backends.mysql",
-                        "credentials": {
-                            "host": db_read['host'],
-                            "port": db_read['port'],
-                            "user": db_read['user'],
-                            "password": db_read['password'],
-                            "database": db_read['name'],
-                        }
-                    }
+                    "default": f"{schema}://{db_write['user']}:{db_write['password']}@{db_write['host']}:{db_write['port']}/{db_write['name']}",
+                    "read": f"{schema}://{db_read['user']}:{db_read['password']}@{db_read['host']}:{db_read['port']}/{db_read['name']}",
                 },
                 "apps": {
                     "models": {
@@ -61,14 +44,14 @@ class DBHandler:
         await Tortoise.close_connections()
 
     @staticmethod
-    async def use_write() -> BaseDBAsyncClient:
+    def use_write() -> BaseDBAsyncClient:
         """
         切换到主库（写库）连接池
         """
         return DBHandler._connections["default"]
 
     @staticmethod
-    async def use_read() -> BaseDBAsyncClient:
+    def use_read() -> BaseDBAsyncClient:
         """
         切换到从库（读库）连接池
         """

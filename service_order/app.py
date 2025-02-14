@@ -1,4 +1,3 @@
-import asyncio
 import logging
 
 from robyn import Robyn
@@ -80,9 +79,9 @@ if __name__ == "__main__":
         port=config.Order.servicePort(),
     )
     __init_rabbitmq()
-    asyncio.run(__init_services())
     # 启动 HTTP 服务
     app = Robyn(__file__)
+    app.startup_handler(__init_services)
     app.configure_authentication(AuthenticationMiddleware())
     setup_routes(app)
     app.start(host="0.0.0.0", port=config.Order.servicePort())

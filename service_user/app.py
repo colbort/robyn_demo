@@ -1,4 +1,3 @@
-import asyncio
 import logging
 
 from robyn import Robyn, DependencyMap
@@ -77,8 +76,6 @@ if __name__ == "__main__":
         port=config.User.servicePort(),
     )
     __init_rabbitmq()
-    # 初始化数据库、redis
-    asyncio.run(__init_services())
     # 国际化初始化
     Translator.set_locales(config.Locales.path())
     # 启动 HTTP 服务
@@ -86,6 +83,7 @@ if __name__ == "__main__":
     dependencies.add_global_dependency(language=i18n_handler)
     dependencies.add_global_dependency(pagination=page_handler)
     app = Robyn(__file__, dependencies=dependencies)
+    app.startup_handler(__init_services)
     app.configure_authentication(AuthenticationMiddleware())
     setup_routes(app)
     app.start(host="0.0.0.0", port=config.User.servicePort())

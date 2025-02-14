@@ -89,7 +89,7 @@ async def logout_user(user_id: str) -> str:
 
 
 @router.register_handler(action_get_user_info)
-async def get_user_info(user_id: str) -> Optional[UserAccount]:
+async def get_user_info(user_id: int) -> Optional[UserAccount]:
     return await db.get_user(user_id)
 
 
