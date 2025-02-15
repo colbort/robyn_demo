@@ -4,6 +4,9 @@ FROM python:3.10-slim
 # 设置工作目录
 WORKDIR /app
 
+# 定义变量，设置 service_core 的路径
+ARG SERVICE_PATH=/app/service_core
+
 # 更新系统并安装构建工具
 RUN apt-get update && apt-get install -y \
     gcc \
@@ -16,15 +19,17 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # 将项目代码复制到容器内
-COPY common /app/service_core/common
-COPY communication /app/service_core/communication
-COPY config /app/service_core/config
-COPY handler /app/service_core/handler
-COPY middleware /app/service_core/middleware
-COPY nacos_client /app/service_core/nacos_client
-COPY models /app/service_core/models
-COPY locales /app/service_core/locales
-COPY service_core /app/service_core
+COPY cache $SERVICE_PATH/cache
+COPY common $SERVICE_PATH/common
+COPY communication $SERVICE_PATH/communication
+COPY config $SERVICE_PATH/config
+COPY errors $SERVICE_PATH/errors
+COPY handler $SERVICE_PATH/handler
+COPY middleware $SERVICE_PATH/middleware
+COPY nacos_client $SERVICE_PATH/nacos_client
+COPY models $SERVICE_PATH/models
+COPY locales $SERVICE_PATH/locales
+COPY service_core $SERVICE_PATH
 
 # 安装依赖
 RUN pip install --no-cache-dir -r ./service_core/requirements.txt

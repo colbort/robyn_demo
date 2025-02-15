@@ -4,6 +4,9 @@ FROM python:3.10-slim
 # 设置工作目录
 WORKDIR /app
 
+# 定义变量，设置 service_user 的路径
+ARG SERVICE_PATH=/app/service_user
+
 # 更新系统并安装构建工具
 RUN apt-get update && apt-get install -y \
     gcc \
@@ -16,16 +19,17 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # 将项目代码复制到容器内
-COPY cache /app/service_user/cache
-COPY common /app/service_user/common
-COPY communication /app/service_user/communication
-COPY config /app/service_user/config
-COPY handler /app/service_user/handler
-COPY middleware /app/service_user/middleware
-COPY nacos_client /app/service_user/nacos_client
-COPY models /app/service_user/models
-COPY locales /app/service_user/locales
-COPY service_user /app/service_user
+COPY cache $SERVICE_PATH/cache
+COPY common $SERVICE_PATH/common
+COPY communication $SERVICE_PATH/communication
+COPY config $SERVICE_PATH/config
+COPY errors $SERVICE_PATH/errors
+COPY handler $SERVICE_PATH/handler
+COPY middleware $SERVICE_PATH/middleware
+COPY nacos_client $SERVICE_PATH/nacos_client
+COPY models $SERVICE_PATH/models
+COPY locales $SERVICE_PATH/locales
+COPY service_user $SERVICE_PATH
 
 # 安装依赖
 RUN pip install --no-cache-dir -r ./service_user/requirements.txt
