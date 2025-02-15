@@ -16,6 +16,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # 将项目代码复制到容器内
+COPY cache /app/service_order/cache
 COPY common /app/service_order/common
 COPY communication /app/service_order/communication
 COPY config /app/service_order/config

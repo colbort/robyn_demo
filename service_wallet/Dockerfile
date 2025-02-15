@@ -17,6 +17,7 @@ RUN apt-get update && apt-get install -y \
 
 
 # 将项目代码复制到容器内
+COPY cache /app/service_wallet/cache
 COPY common /app/service_wallet/common
 COPY communication /app/service_wallet/communication
 COPY config /app/service_wallet/config
