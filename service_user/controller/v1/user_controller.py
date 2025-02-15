@@ -82,7 +82,6 @@ class UserController:
             try:
                 user_id = get_user_id(request.identity)
                 user = await get_user_info(user_id)
-                userCache.publish_mq(user.username, user.password_hash)
                 if user:
                     return success(data={
                         "user_id": user.id,

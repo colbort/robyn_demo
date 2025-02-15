@@ -292,6 +292,8 @@ def cache_result(redis_type: str = "string", ttl: int = None, key_generator: cal
 
                 # 如果没有缓存，调用原函数并将结果缓存
                 result = await func(*args, **kwargs)
+                if result is None:
+                    return None
 
                 # 重新存入更新后的数据
                 if ttl is None:

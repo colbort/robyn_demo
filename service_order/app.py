@@ -72,9 +72,10 @@ async def __init_services():
 
 
 if __name__ == "__main__":
-    nacos = __init_config()
+    # 初始化配置
+    client = __init_config()
     # 服务注册
-    nacos.register_service(
+    client.register_service(
         service_name=config.Order.serviceName(),
         port=config.Order.servicePort(),
     )

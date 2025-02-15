@@ -78,17 +78,17 @@ async def get_user(user_id: int) -> Optional[UserAccount]:
 async def update_user(user: UserAccount) -> bool:
     try:
         DBHandler.use_write()
-        await user.save()
+        await handle_db_operation(user.save, update_fields=["email", "phone", "phone_country_code", "password_hash", "avatar", "nickname"])
         return True
     except Exception as e:
         logger.error(f'更新用户信息失败 {e}')
         return False
 
 
-async def update_user_balance(user: UserAccount) -> bool:
+async def update_user_balance(user: UserAccount, update_fields: list[str]) -> bool:
     try:
         DBHandler.use_write()
-        await handle_db_operation(user.save)
+        await handle_db_operation(user.save, update_fields=update_fields)
         await delete_cache(redis_type="string", cache_key=f"user:{user.id}")
         await delete_cache(redis_type="string", cache_key=f"user:{user.phone}")
         await delete_cache(redis_type="string", cache_key=f"user:{user.email}")

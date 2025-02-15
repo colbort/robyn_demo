@@ -21,8 +21,8 @@ logger = logging.getLogger("robyn")
 logger.setLevel(logging.INFO)
 
 # 设置 Tortoise 的 SQL 日志输出
-logger = logging.getLogger("tortoise.db_client")
-logger.setLevel(logging.INFO)
+logger = logging.getLogger("tortoise")
+logger.setLevel(logging.DEBUG)
 
 
 # logger = logging.getLogger("pika")
@@ -68,10 +68,10 @@ async def __init_services():
 
 
 if __name__ == "__main__":
-    # 注册服务到 Nacos
-    ns = __init_config()
+    # 初始化配置
+    client = __init_config()
     # 服务注册
-    ns.register_service(
+    client.register_service(
         service_name=config.User.serviceName(),
         port=config.User.servicePort(),
     )

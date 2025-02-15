@@ -1,6 +1,8 @@
 import json
 from abc import ABC, abstractmethod
 from threading import Thread
+from typing import Any
+
 import redis
 from common.logger import logger
 
@@ -16,7 +18,7 @@ class MemoryCacheHandler(ABC):
                 password=password,
                 decode_responses=True  # 自动解码
             )
-            logger.info("Redis 初始化完成！")
+            logger.info("Redis 发布/订阅初始化完成！")
         except Exception as e:
             logger.error(f"Redis 发布/订阅初始化失败 {e}")
 
@@ -24,11 +26,10 @@ class MemoryCacheHandler(ABC):
         self.memory_cache = {}
         # Redis Pub/Sub 频道
         self.channel = channel
-
         # 启动子线程来执行订阅
         self._start_subscribe_mq()
 
-    def publish_mq(self, key: str, data: str):
+    def publish_mq(self, key: str, data: Any):
         """发布消息到 Redis MQ (Pub/Sub)"""
         message = {
             "action": "update",
@@ -61,11 +62,11 @@ class MemoryCacheHandler(ABC):
         self.memory_cache[data['key']] = data["data"]  # 更新本地缓存
         logger.info(f"Cache updated via MQ: {data}")
 
-    def get_cache_value(self, key: str) -> str:
+    def get_cache_value(self, key: str) -> Any:
         """从内存缓存中获取数据"""
         return self.memory_cache.get(key)
 
     @abstractmethod
-    def init_cache_handler(self):
+    async def init_cache_handler(self):
         """抽象方法：具体的服务需要实现这个方法来初始化自己的缓存数据"""
         pass

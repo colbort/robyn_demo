@@ -60,6 +60,7 @@ async def __init_services():
 
 
 if __name__ == "__main__":
+    # 初始化配置
     client = __init_config()
     # 服务注册
     client.register_service(

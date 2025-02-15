@@ -121,7 +121,7 @@ async def __freeze_balance(user_id: int, amount: float):
         return {"error": "Insufficient balance"}
     user.balance -= amount  # 冻结余额
     user.frozen_amount += amount
-    if not await db.update_user_balance(user):
+    if not await db.update_user_balance(user, ["balance", "frozen_amount"]):
         return {"error": "Failed to freeze balance"}
     return {"message": "Balance frozen successfully"}
 
@@ -133,7 +133,7 @@ async def __unfreeze_balance(user_id: int, amount: float):
         return {"error": "User not found"}
     user.balance += amount  # 解冻余额
     user.frozen_amount -= amount
-    if not await db.update_user_balance(user):
+    if not await db.update_user_balance(user, ["balance", "frozen_amount"]):
         return {"error": "Failed to unfreeze balance"}
     return {"message": "Balance unfrozen successfully"}
 
