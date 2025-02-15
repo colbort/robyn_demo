@@ -21,7 +21,7 @@ logger = logging.getLogger("robyn")
 logger.setLevel(logging.INFO)
 
 # 设置 Tortoise 的 SQL 日志输出
-logger = logging.getLogger("tortoise")
+logger = logging.getLogger("tortoise.db_client")
 logger.setLevel(logging.DEBUG)
 
 

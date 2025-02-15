@@ -75,10 +75,10 @@ async def get_user(user_id: int) -> Optional[UserAccount]:
         return None
 
 
-async def update_user(user: UserAccount) -> bool:
+async def update_user(user: UserAccount, update_fields: list[str]) -> bool:
     try:
         DBHandler.use_write()
-        await handle_db_operation(user.save, update_fields=["email", "phone", "phone_country_code", "password_hash", "avatar", "nickname"])
+        await handle_db_operation(user.save, update_fields=update_fields)
         return True
     except Exception as e:
         logger.error(f'更新用户信息失败 {e}')

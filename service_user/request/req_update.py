@@ -12,16 +12,18 @@ class ReqUpdate(BaseModel):
     password: Optional[constr(min_length=6, max_length=20)] = None  # 必须，密码长度约束
     captcha: str  # 必须，验证码
 
-    # 自定义验证器：email 和 phone 至少需要一个
-    @classmethod
-    @model_validator(mode="before")
-    def validate_contact(cls, value, info):
-        values = info.data  # 获取所有字段值
-        phone = values.get("phone")
-        phone_country_code = values.get("phone_country_code")
+    @model_validator(mode="after")
+    def validate_contact(self):
+        phone = self.phone
+        phone_country_code = self.phone_country_code
 
-        # 如果有 phone，则必须提供 phone_country_code
         if phone and not phone_country_code:
             raise ValueError("phone_country_code 不能为空")
+        if phone_country_code and not phone:
+            raise ValueError("phone 不能为空")
 
-        return value
+        avatar = self.avatar
+        if avatar and not (avatar.startswith("http://") or avatar.startswith("https://")):
+            raise ValueError("avatar 必须以 http:// 或 https:// 开头")
+
+        return self

@@ -17,8 +17,7 @@ class UserAccount(models.Model):
     salt = fields.CharField(max_length=32, null=False, description="密码盐")
     balance = fields.DecimalField(max_digits=10, decimal_places=2, null=False, default=0.00, description="账户余额")
     points = fields.IntField(default=0, null=False, description="积分")
-    frozen_amount = fields.DecimalField(max_digits=10, decimal_places=2, null=False, default=0.00,
-                                        description="冻结金额")
+    frozen_amount = fields.DecimalField(max_digits=10, decimal_places=2, null=False, default=0.00, description="冻结金额")
     status = fields.IntField(default=1, null=False, description="状态 (1:正常, 0:禁用)")
     created_at = fields.DatetimeField(auto_now_add=True, null=False, description="创建时间")
     updated_at = fields.DatetimeField(auto_now=True, null=False, description="更新时间")

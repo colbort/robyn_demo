@@ -1,7 +1,7 @@
 from tortoise import fields, models
 
 
-# 用户充值表
+# 用户提现表
 class UserRecharge(models.Model):
     id = fields.BigIntField(pk=True)
     user_id = fields.BigIntField()
@@ -17,4 +17,4 @@ class UserRecharge(models.Model):
 
     class Meta:
         table = "t_user_withdrawals"
-        table_description = "用户充值表"
+        table_description = "用户提现表"

@@ -97,19 +97,26 @@ async def update_user_info(user_id: int, data: ReqUpdate) -> bool:
     user = await db.get_user(user_id)
     if not user:
         raise ValueError("用户不存在")
+    update_fields: list[str] = []
     if data.email:
         user.email = data.email
+        update_fields.append("email")
     if data.phone_country_code:
         user.phone_country_code = data.phone_country_code
+        update_fields.append("phone_country_code")
     if data.phone:
         user.phone = data.phone
+        update_fields.append("phone")
     if data.password:
         user.password_hash = hash_password(data.password, user.salt)
+        update_fields.append("password_hash")
     if data.avatar:
         user.avatar = data.avatar
+        update_fields.append("avatar")
     if data.nickname:
         user.nickname = data.nickname
-    return await db.update_user(user)
+        update_fields.append("nickname")
+    return await db.update_user(user, update_fields)
 
 
 async def __freeze_balance(user_id: int, amount: float):

@@ -62,7 +62,7 @@ async def handle_db_operation(func, *args, **kwargs):
     """
     封装数据库操作异常处理
     :param func: 数据库操作的函数
-    :param args: 函数参数
+    :param args: 位置函数参数
     :param kwargs: 函数关键字参数
     :return: 函数执行结果
     """

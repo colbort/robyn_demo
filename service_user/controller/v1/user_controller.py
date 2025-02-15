@@ -6,7 +6,6 @@ from common.identify_parse import get_user_id
 from common.response import fail, success, error
 from common.router_group import RouterGroup
 from handler.translator_handler import Translator
-from handler.user_cache_handler import userCache
 from service_user.request.req_login import ReqLogin
 from service_user.request.req_register import ReqRegister
 from service_user.services.user_service import *
